@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from telethon import TelegramClient
 from telethon.errors import FloodWaitError, RPCError
 from datos import api_id, api_hash
@@ -38,8 +38,7 @@ def index():
         if 'cancel' in request.form:
             # Activar el evento de cancelación
             cancel_event.set()
-            flash('Envío cancelado.', 'info')
-            return redirect(url_for('index'))
+            return jsonify({'success': True, 'message': 'Envío cancelado.'})
 
         # Datos del formulario
         dest_key = request.form.get('destination')
@@ -49,21 +48,18 @@ def index():
         special_pattern = 'special_pattern' in request.form  # Verificar si el checkbox está marcado
 
         if not prefix or not messages:
-            flash('Prefijo y mensajes son requeridos.', 'warning')
-            return redirect(url_for('index'))
+            return jsonify({'success': False, 'message': 'Prefijo y mensajes son requeridos.'})
 
         target_chat = destinations.get(dest_key)
         if not target_chat:
-            flash('Destino inválido.', 'danger')
-            return redirect(url_for('index'))
+            return jsonify({'success': False, 'message': 'Destino inválido.'})
 
         # Reiniciar el evento de cancelación
         cancel_event.clear()
 
         # Ejecutar envío
         asyncio.run(send_messages(target_chat, prefix, delay, messages, special_pattern))
-        flash('Envío completado exitosamente.', 'success')
-        return redirect(url_for('index'))
+        return jsonify({'success': True, 'message': 'Envío completado exitosamente.'})
 
     return render_template('index.html', destinations=load_destinations())
 
