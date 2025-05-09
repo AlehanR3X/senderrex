@@ -85,7 +85,6 @@
     }
   </style>
 </head>
-</head>
 <body>
   <div class="container">
     <h1>Enviar Mensajes Telegram</h1>
@@ -98,7 +97,7 @@
       {% endif %}
     {% endwith %}
 
-    <form method="POST">
+    <form method="POST" id="send-form">
       <div class="mb-3">
         <label for="destination" class="form-label">Destino:</label>
         <select class="form-select" id="destination" name="destination">
@@ -129,5 +128,30 @@
       </div>
     </form>
   </div>
+
+  <script>
+    document.getElementById('send-form').addEventListener('submit', async function (e) {
+        e.preventDefault(); // Evitar el envío tradicional del formulario
+
+        const formData = new FormData(this);
+        const response = await fetch(this.action, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                alert('Envío completado exitosamente.');
+                // Limpiar las líneas de mensaje enviadas
+                document.getElementById('messages').value = '';
+            } else {
+                alert('Error: ' + result.message);
+            }
+        } else {
+            alert('Error en el servidor.');
+        }
+    });
+  </script>
 </body>
 </html>
