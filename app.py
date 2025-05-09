@@ -11,7 +11,7 @@ from datos import api_id, api_hash
 
 # Configuración básica
 app = Flask(__name__)
-app.secret_key = 'replace-with-your-secret-key'  # ya lo tenías
+app.secret_key = 'replace-with-your-secret-key'
 
 SESSION_NAME = 'session_telegram'
 DESTINATIONS_FILE = 'destino.json'
@@ -78,9 +78,9 @@ def cancel(job_id):
     evt = cancel_events.get(job_id)
     if evt:
         evt.set()
-        flash('Se ha solicitado la cancelación del envío.', 'warning')
+        flash('Cancelando envío…', 'info')
     else:
-        flash('No existe un envío con ese identificador.', 'danger')
+        flash('No hay envío activo.', 'warning')
     return redirect(url_for('index'))
 
 async def send_messages(target_chat, prefix, delay, messages, stop_event):
@@ -108,10 +108,8 @@ async def send_messages(target_chat, prefix, delay, messages, stop_event):
                     break
 
             except FloodWaitError as e:
-                # si llega flood, esperamos lo que Telegram diga
                 await asyncio.sleep(e.seconds)
             except Exception:
-                # cualquier otro error, lo ignoramos y seguimos
                 continue
 
     # limpieza al terminar o cancelar
