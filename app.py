@@ -46,6 +46,7 @@ def index():
         prefix = request.form.get('prefix', '').strip()
         delay = int(request.form.get('delay', 30))
         messages = request.form.get('messages', '').splitlines()
+        special_pattern = 'special_pattern' in request.form  # Verificar si el checkbox está marcado
 
         if not prefix or not messages:
             flash('Prefijo y mensajes son requeridos.', 'warning')
@@ -60,17 +61,17 @@ def index():
         cancel_event.clear()
 
         # Ejecutar envío
-        asyncio.run(send_messages(target_chat, prefix, delay, messages))
+        asyncio.run(send_messages(target_chat, prefix, delay, messages, special_pattern))
         flash('Envío completado exitosamente.', 'success')
         return redirect(url_for('index'))
 
     return render_template('index.html', destinations=load_destinations())
 
-async def send_messages(target_chat, prefix, delay, messages):
+async def send_messages(target_chat, prefix, delay, messages, special_pattern=False):
     async with TelegramClient(SESSION_NAME, api_id, api_hash) as client:
         await client.start()
         entity = await client.get_input_entity(target_chat)
-        for msg in messages:
+        for i, msg in enumerate(messages):
             if cancel_event.is_set():
                 break  # Detener el envío si se activa el evento de cancelación
             text = msg.strip()
@@ -79,10 +80,22 @@ async def send_messages(target_chat, prefix, delay, messages):
             full = f"{prefix} {text}"
             try:
                 await client.send_message(entity, full)
-                await asyncio.sleep(delay)
+                if special_pattern:
+                    if i % 2 == 0:  # Líneas pares: esperar 5 segundos
+                        for _ in range(5):
+                            if cancel_event.is_set():
+                                return
+                            await asyncio.sleep(1)
+                    else:  # Líneas impares: usar el tiempo configurado
+                        for _ in range(delay):
+                            if cancel_event.is_set():
+                                return
+                            await asyncio.sleep(1)
+                else:
+                    await asyncio.sleep(delay)
             except FloodWaitError as e:
                 await asyncio.sleep(e.seconds)
-            except Exception:
+            except Exception as e:
                 continue
 
 if __name__ == '__main__':
