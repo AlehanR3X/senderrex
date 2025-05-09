@@ -87,6 +87,17 @@
       color: #f0f0f0;
       border-radius: 0.75rem;
     }
+
+    /* --- NUEVAS CLASES --- */
+    .cancel-container {
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .status-text {
+      color: #cccccc;
+      text-align: center;
+      margin-top: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -128,10 +139,12 @@
     </form>
 
     {% if current_job %}
-      <form method="post" action="{{ url_for('cancel', job_id=current_job) }}">
-        <button type="submit" class="btn btn-danger">Cancelar envío</button>
-      </form>
-      <p class="mt-2 text-center text-warning">Envío en curso... ID: {{ current_job }}</p>
+      <div class="cancel-container">
+        <form method="post" action="{{ url_for('cancel', job_id=current_job) }}">
+          <button type="submit" class="btn btn-danger">Cancelar envío</button>
+        </form>
+        <p class="status-text">En proceso…</p>
+      </div>
     {% endif %}
   </div>
 </body>
