@@ -8,19 +8,14 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <!-- Custom Styles -->
   <style>
-    /* Fondo estilo Render.com con cúadricula y degradados */
     body {
       background-color: #000000;
       background-image:
-        /* Cuadrícula de 1cm x 1cm con márgenes más gruesos */
         repeating-linear-gradient(transparent, transparent calc(1cm - 2px), rgba(255,255,255,0.3) 1cm),
         repeating-linear-gradient(90deg, transparent, transparent calc(1cm - 2px), rgba(255,255,255,0.3) 1cm),
-        /* degradados radiales para dar profundidad */
         radial-gradient(circle at 20% 30%, rgba(0, 0, 0, 0.25), transparent 50%),
         radial-gradient(circle at 80% 70%, rgba(0, 0, 0, 0.25), transparent 50%),
-        /* degradado base elegante */
         linear-gradient(120deg, #000000, #1a1a1a),
-        /* Capa de textura con ruido (simula profundidad aleatoria) */
         url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><filter id='f1'><feTurbulence type='fractalNoise' baseFrequency='0.05' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23f1)' /></svg>");
       background-blend-mode: overlay, overlay, screen, screen, normal, multiply;
       color: #e0e0e0;
@@ -77,6 +72,15 @@
       box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6);
       transform: translateY(-3px);
     }
+    .btn-danger {
+      border: none;
+      border-radius: 0.75rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 1rem;
+    }
     .alert {
       background: #2b2b2b;
       border: 1px solid #3d3d3d;
@@ -84,7 +88,6 @@
       border-radius: 0.75rem;
     }
   </style>
-</head>
 </head>
 <body>
   <div class="container">
@@ -98,7 +101,7 @@
       {% endif %}
     {% endwith %}
 
-    <form method="POST">
+    <form method="POST" {% if current_job %}class="opacity-50 pointer-events-none"{% endif %}>
       <div class="mb-3">
         <label for="destination" class="form-label">Destino:</label>
         <select class="form-select" id="destination" name="destination">
@@ -120,9 +123,16 @@
         <textarea class="form-control" id="messages" name="messages" rows="5"></textarea>
       </div>
       <div class="d-grid">
-        <button type="submit" class="btn btn-primary">Enviar</button>
+        <button type="submit" class="btn btn-primary" {% if current_job %}disabled{% endif %}>Enviar</button>
       </div>
     </form>
+
+    {% if current_job %}
+      <form method="post" action="{{ url_for('cancel', job_id=current_job) }}">
+        <button type="submit" class="btn btn-danger">Cancelar envío</button>
+      </form>
+      <p class="mt-2 text-center text-warning">Envío en curso... ID: {{ current_job }}</p>
+    {% endif %}
   </div>
 </body>
 </html>
